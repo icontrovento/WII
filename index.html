@@ -27,12 +27,15 @@ header h2{margin:0;font-size:clamp(26px,6vw,44px);font-weight:900;color:var(--bl
 #plaza{position:relative;height:300px;max-width:760px;margin:10px auto;border-radius:20px;background:linear-gradient(#eaf6ff,#fff 70%,#e3efe0);border:3px solid var(--line);overflow:hidden}
 #plaza h3{position:absolute;margin:8px 14px;font-size:14px;z-index:3}
 .m{position:absolute;bottom:14px;width:64px;text-align:center;font-size:12px;font-weight:800;user-select:none}
+.m{z-index:2;touch-action:manipulation}
+.m span{display:block}
 .m svg{width:64px;display:block}
 .m.dance svg{animation:dn .35s infinite alternate}
 .m.hi svg{animation:hp .5s 2}
 @keyframes dn{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-14px)}}
 @keyframes hp{50%{transform:translateY(-22px) scale(1.12)}}
-.bub{position:absolute;bottom:92px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid var(--line);border-radius:14px;padding:3px 9px;white-space:nowrap;font-size:13px;animation:pop .25s}
+.bub{position:absolute;bottom:92px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid var(--line);border-radius:14px;padding:4px 10px;width:max-content;max-width:170px;text-align:center;z-index:5;font-size:13px;line-height:1.25;animation:pop .25s}
+.acts{flex-wrap:wrap}
 @keyframes pop{from{transform:translateX(-50%) scale(.3)}}
 #pop{position:fixed;inset:0;background:#0006;z-index:40;display:none;align-items:center;justify-content:center;padding:14px}
 #pop.on{display:flex}
@@ -72,8 +75,8 @@ const PARTY=new Date("2026-10-14T20:00:00+02:00");
 const INFO={
  data:["📅 Quando","Mercoledì 14 ottobre, dalle 20:00. Chi arriva tardi gioca con il telecomando scarico."],
  dove:["🏠 Dove","Giammy's House. Scrivigli per l'indirizzo preciso e il citofono."],
- giochi:["🎳 Giochi","Wii Sports, Mario Kart, Just Dance, Wii Party. Torneo a eliminazione, perdente beve."],
- drink:["🍻 Drink","Si beve un po'. Dicci il tuo preferito creando il Mii. Se volete portate qualcosa da bere o da sgranocchiare."]};
+ giochi:["🎳 Giochi","Wii Sports (bowling e tennis), Mario Kart, Just Dance, Wii Party. Torneo a eliminazione, perdente beve."],
+ drink:["🍻 Drink","Si beve un po'. Dicci il tuo preferito creando il Mii. Portate qualcosa da bere o da sgranocchiare."]};
 // ====== MII ======
 const SK=["#ffdcb8","#f1c08e","#d49a6a","#8d5a3a"],HC=["#2b1d14","#7a4a22","#d8a24a","#c8402c","#9aa0a6"],
  SH=["#36a9e1","#e5533d","#7bc043","#f6b93b","#9b59b6","#ff7eb6"];
@@ -132,30 +135,43 @@ function creator(){const d=me||{name:"",skin:0,hs:0,hc:0,ey:0,mo:0,ac:0,dr:0,gm:
  $("#ok").onclick=async()=>{d.name=$("#nm").value.trim();if(!d.name){$("#msg").textContent="Scrivi un nome!";return}
   d.id=d.id||Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   me=d;localStorage.setItem("wiiMe",JSON.stringify(d));
-  $("#msg").textContent="Salvo…";
+  sync(miis.filter(x=>x.id!==d.id));pop.classList.remove("on");
+  plaza.scrollIntoView({behavior:"smooth",block:"center"});
   try{await post({action:"mii",mii:d})}catch(e){}
-  pop.classList.remove("on");load()}}
+  setTimeout(load,1500)}}
 async function post(o){return fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o)})}
 // ====== PIAZZA ======
 const plaza=$("#plaza");
-function sync(list){miis=list;$("#n").textContent=list.length;
- list.forEach(m=>{if(!els[m.id]){const e=document.createElement("div");e.className="m";
-  e.innerHTML=mii(m)+`<div>${m.name}</div>`;
+function sync(list){
+ if(me&&!list.some(m=>m.id===me.id))list=[...list,me];
+ miis=list;$("#n").textContent=list.length;
+ list.forEach(m=>{const sg=JSON.stringify(m),x=els[m.id];
+  if(x&&x.sg!==sg){x.sg=sg;x.firstChild.innerHTML=mii(m);x.querySelector(".nm").textContent=m.name}
+  if(!x){const e=document.createElement("div");e.className="m";e.sg=sg;
+  e.innerHTML=`<span>${mii(m)}</span><div class="nm">${m.name}</div>`;
   e.o={x:Math.random()*(plaza.clientWidth-70),v:(Math.random()<.5?-1:1)*(.3+Math.random()*.4)};
   e.onclick=ev=>{ev.stopPropagation();target(m)};plaza.appendChild(e);els[m.id]=e}
   els[m.id].title=`${m.name} · ${DR[m.dr]||""} · ${GM[m.gm]||""}`})}
-function target(m){if(!me)return creator();if(m.id===me.id)return;
+function target(m){if(!me){creator();$("#msg").textContent="Crea prima il tuo Mii per interagire!";return}
+ if(m.id===me.id)return creator();
  open(`<h3>${m.name}</h3><p>Beve: <b>${DR[m.dr]||"?"}</b><br>Sfida a: <b>${GM[m.gm]||"?"}</b></p>
- <div class="acts"><button class="btn" data-a="hi">👋</button><button class="btn" data-a="dance">💃</button><button class="btn" data-a="five">✋</button></div>`);
- card.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a={from:me.name,to:m.id,type:b.dataset.a,ts:Date.now()};
-  pop.classList.remove("on");show(a);post({action:"act",act:a}).catch(()=>{})})}
+ <div class="acts"><button class="btn" data-a="hi">👋</button><button class="btn" data-a="dance">💃</button><button class="btn" data-a="five">✋</button><button class="btn" data-a="talk">🗣</button></div>`);
+ card.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const t=b.dataset.a;pop.classList.remove("on");
+  if(t==="talk")return say(m.id,rnd());
+  const a={from:me.name,to:m.id,type:t,ts:Date.now()};
+  show(a);post({action:"act",act:a}).catch(()=>{});setTimeout(()=>say(m.id,rnd()),1300)})}
+const R=["Penso, quindi sono. Bevo, quindi ancora sono.","Veni, vidi, vinsi a bowling.","Houston, abbiamo un problema: il mio Mii ha gli occhiali storti.","Un grande potere comporta grandi responsabilità. Tipo non lanciare il Wiimote.","Che la Forza sia con te. Il telecomando è con me.","I'll be back... dopo il prossimo drink.","Ho visto cose che voi umani... tipo il guscio blu all'ultimo giro.","Perché i programmatori confondono Halloween e Natale? Perché 31 Oct = 25 Dec.","Un uomo entra in un bar. Ahi.","Il bowling è come la vita: il più delle volte finisce in canalina.","Tra il dire e il fare c'è di mezzo il Mario Kart.","Mi hanno detto «sii te stesso». Sono un Mii, ho obbedito.","Metti la cinghia al polso. È l'unico comandamento.","Il Wii Fit mi ha detto di dimagrire. Ho smesso di usare il Wii Fit.","Hai mai visto un Mii con le occhiaie? Io sì: siamo a martedì.","Un Mii al giorno toglie il medico di torno.","Conosco i miei limiti, ed è per questo che prendo un altro giro.","Non è il tuo giorno? Neanche il mio: ho preso il guscio blu.","Ho dato il cinque a Giammy. Ora ho quattro dita.","Chi dorme non piglia pesci, chi gioca prende il tennis.","Se bevi non guidare: parola di Mii.","Ho una barzelletta sul Wii Fit, ma è pesante."];
+const rnd=()=>R[Math.floor(Math.random()*R.length)];
+function say(id,t){const e=els[id];if(!e)return;e.querySelectorAll(".bub").forEach(x=>x.remove());
+ const b=document.createElement("div");b.className="bub";b.textContent=t;e.appendChild(b);setTimeout(()=>b.remove(),4500)}
 function show(a){const e=els[a.to];if(!e)return;const t={hi:"Ciao "+"!",dance:"💃 Si balla!",five:"✋ Dammi il cinque!"}[a.type];
  const b=document.createElement("div");b.className="bub";b.textContent=a.from+": "+(a.type==="hi"?"Ciaooo 👋":t);e.appendChild(b);
  e.classList.add(a.type==="dance"?"dance":"hi");setTimeout(()=>{b.remove();e.classList.remove("dance","hi")},2600)}
 (function loop(){const W=plaza.clientWidth-70;Object.values(els).forEach(e=>{if(e.classList.contains("dance"))return;
  e.o.x+=e.o.v;if(e.o.x<0||e.o.x>W)e.o.v*=-1;e.style.left=e.o.x+"px"});requestAnimationFrame(loop)})();
 async function load(){if(API.startsWith("INCOLLA")){sync(me?[me]:[]);return}
- try{const r=await (await fetch(API)).json();sync(r.miis||[]);
-  (r.acts||[]).filter(a=>a.ts>seenActs).forEach(a=>{seenActs=Math.max(seenActs,a.ts);if(!me||a.from!==me.name)show(a)})}catch(e){}}
-load();setInterval(load,6000);
+ try{const r=await (await fetch(API)).json();sync(r.miis||[]);try{localStorage.setItem("wiiC",JSON.stringify(r.miis||[]))}catch(e){}
+  (r.acts||[]).filter(a=>a.ts>seenActs).forEach(a=>{seenActs=Math.max(seenActs,a.ts);if(!me||a.from!==me.name)show(a)})}catch(e){console.error("Errore API Apps Script:",e);sync(miis)}}
+try{sync(JSON.parse(localStorage.getItem("wiiC"))||[])}catch(e){sync([])}
+load();setInterval(()=>{if(!document.hidden)load()},6000);
 </script></body></html>
