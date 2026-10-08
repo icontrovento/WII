@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wii Night da Giammy</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f8fb;--ink:#4a5560;--blue:#36a9e1;--line:#d5dde3}
+*{box-sizing:border-box}
+body{margin:0;font-family:Nunito,system-ui,sans-serif;background:linear-gradient(#fff,var(--bg) 60%,#dcebf5);color:var(--ink);min-height:100vh;overflow-x:hidden}
+@media(hover:hover){body,button,.tile{cursor:none}}
+#hand{position:fixed;z-index:99;pointer-events:none;font-size:34px;left:-50px;top:-50px;transform:translate(-8px,-4px) rotate(-15deg);transition:transform .1s}
+#hand.d{transform:translate(-8px,-4px) rotate(-15deg) scale(.8)}
+#boot{position:fixed;inset:0;z-index:50;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;transition:opacity .6s}
+#boot.off{opacity:0;pointer-events:none}
+#boot h1{font-size:clamp(34px,9vw,64px);font-weight:900;margin:10px 0;color:var(--blue);letter-spacing:-1px}
+.remote{font-size:80px;animation:sw 1.4s ease-in-out infinite}
+@keyframes sw{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg) translateY(-8px)}}
+.btn{font:900 18px Nunito;border:3px solid var(--blue);background:#fff;color:var(--blue);border-radius:40px;padding:12px 30px;margin-top:16px}
+.btn:hover{background:var(--blue);color:#fff}
+header{text-align:center;padding:28px 16px 8px}
+header h2{margin:0;font-size:clamp(26px,6vw,44px);font-weight:900;color:var(--blue)}
+#cd{display:inline-block;margin-top:8px;background:#fff;border:2px solid var(--line);border-radius:20px;padding:6px 18px;font-weight:800}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:760px;margin:20px auto;padding:0 16px}
+.tile{background:#fff;border:3px solid var(--line);border-radius:18px;padding:22px 10px;text-align:center;font-weight:900;font-size:17px;transition:transform .2s,border-color .2s;box-shadow:inset 0 -8px 14px #edf2f6}
+.tile:hover{transform:scale(1.07);border-color:var(--blue)}
+.tile b{display:block;font-size:38px;margin-bottom:4px}
+#plaza{position:relative;height:300px;max-width:760px;margin:10px auto;border-radius:20px;background:linear-gradient(#eaf6ff,#fff 70%,#e3efe0);border:3px solid var(--line);overflow:hidden}
+#plaza h3{position:absolute;margin:8px 14px;font-size:14px;z-index:3}
+.m{position:absolute;bottom:14px;width:64px;text-align:center;font-size:12px;font-weight:800;user-select:none}
+.m svg{width:64px;display:block}
+.m.dance svg{animation:dn .35s infinite alternate}
+.m.hi svg{animation:hp .5s 2}
+@keyframes dn{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-14px)}}
+@keyframes hp{50%{transform:translateY(-22px) scale(1.12)}}
+.bub{position:absolute;bottom:92px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid var(--line);border-radius:14px;padding:3px 9px;white-space:nowrap;font-size:13px;animation:pop .25s}
+@keyframes pop{from{transform:translateX(-50%) scale(.3)}}
+#pop{position:fixed;inset:0;background:#0006;z-index:40;display:none;align-items:center;justify-content:center;padding:14px}
+#pop.on{display:flex}
+.card{background:#fff;border-radius:24px;border:4px solid var(--line);padding:22px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+.card h3{margin:0 0 10px;color:var(--blue);font-size:24px}
+label{display:block;font-weight:800;margin:10px 0 4px}
+input[type=text]{width:100%;font:700 16px Nunito;padding:10px;border:2px solid var(--line);border-radius:12px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{font:800 14px Nunito;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px 10px;color:var(--ink)}
+.opts button.on{border-color:var(--blue);background:#e4f4fc}
+.sw{width:30px;height:30px;padding:0!important;border-radius:50%!important}
+#prev{width:110px;margin:0 auto;display:block}
+.acts{display:flex;gap:8px;justify-content:center;margin-top:12px}
+small{opacity:.7}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<div id="hand">👆</div>
+<div id="boot"><div class="remote">🎮</div><h1>Wii Night</h1><div>Casa di Giammy · 14 ottobre · 20:00</div>
+<button class="btn" id="go">Premi A per continuare</button></div>
+
+<header><h2>Wii Night da Giammy</h2><div id="cd">…</div></header>
+<div id="grid">
+<div class="tile" data-p="data"><b>📅</b>Quando</div>
+<div class="tile" data-p="dove"><b>🏠</b>Dove</div>
+<div class="tile" data-p="giochi"><b>🎳</b>Giochi</div>
+<div class="tile" data-p="drink"><b>🍻</b>Drink</div>
+<div class="tile" data-p="mii" style="border-color:var(--blue)"><b>🙂</b>Crea il tuo Mii<br><small>= ci sono!</small></div>
+</div>
+<div id="plaza"><h3>Piazza Mii · <span id="n">0</span> pronti</h3></div>
+<p style="text-align:center"><small>Tocca un Mii per farlo salutare, ballare o dargli il cinque.</small></p>
+<div id="pop"><div class="card" id="card"></div></div>
+
+<script>
+// ====== CONFIG ======
+const API="https://script.google.com/macros/s/AKfycbxfW1A2OnJiHfVvTBoAXYmXmNaro1Ei_3JpsO6rveFa/dev";
+const PARTY=new Date("2026-10-14T20:00:00+02:00");
+const INFO={
+ data:["📅 Quando","Mercoledì 14 ottobre, dalle 20:00. Chi arriva tardi gioca con il telecomando scarico."],
+ dove:["🏠 Dove","Giammy's House. Scrivigli per l'indirizzo preciso e il citofono."],
+ giochi:["🎳 Giochi","Wii Sports, Mario Kart, Just Dance, Wii Party. Torneo a eliminazione, perdente beve."],
+ drink:["🍻 Drink","Si beve un po'. Dicci il tuo preferito creando il Mii. Se volete portate qualcosa da bere o da sgranocchiare."]};
+// ====== MII ======
+const SK=["#ffdcb8","#f1c08e","#d49a6a","#8d5a3a"],HC=["#2b1d14","#7a4a22","#d8a24a","#c8402c","#9aa0a6"],
+ SH=["#36a9e1","#e5533d","#7bc043","#f6b93b","#9b59b6","#ff7eb6"];
+const DR=["Birra","Spritz","Vino","Gin tonic","Analcolico"],GM=["Wii Sports","Mario Kart","Just Dance","Wii Party"];
+function mii(m,id){const s=SK[m.skin%4],h=HC[m.hc%5],sh=SH[((m.name||"a").charCodeAt(0)||0)%6];
+ const F=`<path d="M24 48Q22 14 50 14Q78 14 76 48Q62 26 44 30Q32 34 24 48Z" fill="${h}"/>`;
+ const hair=[`<path d="M24 44Q22 14 50 14Q78 14 76 44Q64 28 50 30Q36 28 24 44Z" fill="${h}"/>`,
+  `<path d="M22 54Q18 12 50 12Q82 12 78 54Q74 30 50 28Q26 30 22 54Z" fill="${h}"/>`,
+  `<path d="M24 44Q22 14 50 14Q78 14 76 44Q60 36 50 24Q40 36 24 44Z" fill="${h}"/>`,
+  `<ellipse cx="50" cy="20" rx="26" ry="8" fill="${h}"/>`,F,F,F][m.hs%7];
+ const back=[,,,,`<path d="M20 50Q18 8 50 8Q82 8 80 50L86 112Q50 122 14 112Z" fill="${h}"/>`,
+  `<path d="M20 50Q16 8 50 8Q84 8 80 50Q92 84 76 100Q62 90 50 98Q38 90 24 100Q8 84 20 50Z" fill="${h}"/>`,
+  `<g fill="${h}"><circle cx="14" cy="72" r="13"/><circle cx="86" cy="72" r="13"/><path d="M20 50Q18 8 50 8Q82 8 80 50Z"/></g>`][m.hs%7]||"";
+ const eyes=[`<circle cx="40" cy="52" r="3.5" fill="#222"/><circle cx="60" cy="52" r="3.5" fill="#222"/>`,
+  `<ellipse cx="40" cy="52" rx="3" ry="5" fill="#222"/><ellipse cx="60" cy="52" rx="3" ry="5" fill="#222"/>`,
+  `<path d="M35 53Q40 47 45 53M55 53Q60 47 65 53" stroke="#222" stroke-width="3" fill="none"/>`][m.ey%3];
+ const mouth=[`<path d="M40 68Q50 78 60 68" stroke="#7a2a2a" stroke-width="3" fill="none"/>`,
+  `<path d="M42 70Q50 74 58 70" stroke="#7a2a2a" stroke-width="3" fill="none"/>`,
+  `<ellipse cx="50" cy="70" rx="7" ry="5" fill="#7a2a2a"/>`][m.mo%3];
+ const acc=["",`<g fill="none" stroke="#222" stroke-width="2.5"><circle cx="40" cy="52" r="8"/><circle cx="60" cy="52" r="8"/><path d="M48 52h4"/></g>`,
+  `<path d="M38 64Q50 58 62 64Q50 68 38 64Z" fill="${h}"/>`,
+  `<path d="M26 28Q50 4 74 28Z" fill="#e5533d"/><rect x="22" y="26" width="56" height="6" rx="3" fill="#c8402c"/>`][m.ac%4];
+ return `<svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg"><rect x="26" y="88" width="48" height="40" rx="14" fill="${sh}"/>${back}<ellipse cx="50" cy="52" rx="28" ry="34" fill="${s}"/>${hair}${eyes}${mouth}${acc}</svg>`}
+// ====== STATO ======
+const $=q=>document.querySelector(q);
+let me=null;try{me=JSON.parse(localStorage.getItem("wiiMe"))}catch(e){}
+let miis=[],seenActs=Date.now(),els={};
+const pop=$("#pop"),card=$("#card");
+function open(h){card.innerHTML=h;pop.classList.add("on")}
+pop.onclick=e=>{if(e.target===pop)pop.classList.remove("on")};
+// cursore
+const hand=$("#hand");
+addEventListener("pointermove",e=>{if(e.pointerType==="mouse"){hand.style.left=e.clientX+"px";hand.style.top=e.clientY+"px"}});
+addEventListener("pointerdown",()=>hand.classList.add("d"));addEventListener("pointerup",()=>hand.classList.remove("d"));
+$("#go").onclick=()=>$("#boot").classList.add("off");
+// countdown
+setInterval(()=>{let d=PARTY-Date.now();if(d<0){$("#cd").textContent="🎉 La festa è iniziata!";return}
+ const g=Math.floor(d/864e5),h=Math.floor(d/36e5)%24,m=Math.floor(d/6e4)%60,s=Math.floor(d/1e3)%60;
+ $("#cd").textContent=`⏱ ${g}g ${h}h ${m}m ${s}s al party`},1000);
+// tile
+document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{const p=t.dataset.p;
+ if(p==="mii")return creator();
+ open(`<h3>${INFO[p][0]}</h3><p>${INFO[p][1]}</p><div class="acts"><button class="btn" onclick="pop.classList.remove('on')">Chiudi</button></div>`)});
+// ====== CREATORE ======
+function creator(){const d=me||{name:"",skin:0,hs:0,hc:0,ey:0,mo:0,ac:0,dr:0,gm:0};
+ const row=(k,n,lab)=>`<label>${lab}</label><div class="opts">${Array.from({length:n},(_,i)=>`<button data-k="${k}" data-v="${i}" class="${d[k]==i?'on':''}">${i+1}</button>`).join("")}</div>`;
+ const sel=(k,arr,lab)=>`<label>${lab}</label><div class="opts">${arr.map((a,i)=>`<button data-k="${k}" data-v="${i}" class="${d[k]==i?'on':''}">${a}</button>`).join("")}</div>`;
+ open(`<h3>Crea il tuo Mii</h3><div id="prev">${mii(d)}</div>
+ <label>Nome</label><input type="text" id="nm" maxlength="12" value="${d.name}" placeholder="Il tuo nome">
+ ${row("skin",4,"Pelle")}${row("hs",7,"Capelli (1-4 corti, 5-7 lunghi)")}${row("hc",5,"Colore capelli")}${row("ey",3,"Occhi")}${row("mo",3,"Bocca")}
+ ${sel("ac",["Niente","Occhiali","Baffi","Cappello"],"Accessorio")}${sel("dr",DR,"Drink preferito")}${sel("gm",GM,"Gioco in cui sfidarti")}
+ <div class="acts"><button class="btn" id="ok">Ci sono! ✔</button></div><p id="msg"></p>`);
+ const upd=()=>{$("#prev").innerHTML=mii(d)};
+ card.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>{d[b.dataset.k]=+b.dataset.v;
+  b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));upd()});
+ $("#ok").onclick=async()=>{d.name=$("#nm").value.trim();if(!d.name){$("#msg").textContent="Scrivi un nome!";return}
+  d.id=d.id||Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  me=d;localStorage.setItem("wiiMe",JSON.stringify(d));
+  $("#msg").textContent="Salvo…";
+  try{await post({action:"mii",mii:d})}catch(e){}
+  pop.classList.remove("on");load()}}
+async function post(o){return fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o)})}
+// ====== PIAZZA ======
+const plaza=$("#plaza");
+function sync(list){miis=list;$("#n").textContent=list.length;
+ list.forEach(m=>{if(!els[m.id]){const e=document.createElement("div");e.className="m";
+  e.innerHTML=mii(m)+`<div>${m.name}</div>`;
+  e.o={x:Math.random()*(plaza.clientWidth-70),v:(Math.random()<.5?-1:1)*(.3+Math.random()*.4)};
+  e.onclick=ev=>{ev.stopPropagation();target(m)};plaza.appendChild(e);els[m.id]=e}
+  els[m.id].title=`${m.name} · ${DR[m.dr]||""} · ${GM[m.gm]||""}`})}
+function target(m){if(!me)return creator();if(m.id===me.id)return;
+ open(`<h3>${m.name}</h3><p>Beve: <b>${DR[m.dr]||"?"}</b><br>Sfida a: <b>${GM[m.gm]||"?"}</b></p>
+ <div class="acts"><button class="btn" data-a="hi">👋</button><button class="btn" data-a="dance">💃</button><button class="btn" data-a="five">✋</button></div>`);
+ card.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a={from:me.name,to:m.id,type:b.dataset.a,ts:Date.now()};
+  pop.classList.remove("on");show(a);post({action:"act",act:a}).catch(()=>{})})}
+function show(a){const e=els[a.to];if(!e)return;const t={hi:"Ciao "+"!",dance:"💃 Si balla!",five:"✋ Dammi il cinque!"}[a.type];
+ const b=document.createElement("div");b.className="bub";b.textContent=a.from+": "+(a.type==="hi"?"Ciaooo 👋":t);e.appendChild(b);
+ e.classList.add(a.type==="dance"?"dance":"hi");setTimeout(()=>{b.remove();e.classList.remove("dance","hi")},2600)}
+(function loop(){const W=plaza.clientWidth-70;Object.values(els).forEach(e=>{if(e.classList.contains("dance"))return;
+ e.o.x+=e.o.v;if(e.o.x<0||e.o.x>W)e.o.v*=-1;e.style.left=e.o.x+"px"});requestAnimationFrame(loop)})();
+async function load(){if(API.startsWith("INCOLLA")){sync(me?[me]:[]);return}
+ try{const r=await (await fetch(API)).json();sync(r.miis||[]);
+  (r.acts||[]).filter(a=>a.ts>seenActs).forEach(a=>{seenActs=Math.max(seenActs,a.ts);if(!me||a.from!==me.name)show(a)})}catch(e){}}
+load();setInterval(load,6000);
+</script></body></html>
